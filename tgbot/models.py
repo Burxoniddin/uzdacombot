@@ -1,4 +1,5 @@
 from __future__ import annotations
+from audioop import maxpp
 
 from typing import Union, Optional, Tuple
 
@@ -6,7 +7,7 @@ from django.db import models
 from django.db.models import QuerySet, Manager
 from telegram import Update
 from telegram.ext import CallbackContext
-
+from django.utils.text import slugify
 from dtb.settings import DEBUG
 from tgbot.handlers.utils.info import extract_user_data_from_update
 from utils.models import CreateUpdateTracker, nb, CreateTracker, GetOrNoneManager
@@ -93,3 +94,23 @@ class Location(CreateTracker):
             save_data_from_arcgis(latitude=self.latitude, longitude=self.longitude, location_id=self.pk)
         else:
             save_data_from_arcgis.delay(latitude=self.latitude, longitude=self.longitude, location_id=self.pk)
+
+class Files(models.Model):
+    name = models.CharField(max_length=250, null=True, blank=True)
+    file_id = models.CharField(max_length=10000, null=True, blank=True)
+    type = models.CharField(max_length=250, null=True, blank=True)
+    slug = models.SlugField(max_length=200, unique=True)
+    description = models.TextField(max_length=10000, null=True, blank=True)
+    created = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ("-created",)
+        
+    def save(self,*args,**kwargs):
+        i = 1
+        text = slugify(self.name)        
+        while Files.objects.filter(slug = text).exists() :
+            i+=1            
+            text = slugify(f"{text}+{i}")                           
+        self.slug=slugify(text)        
+        super(Files,self).save(*args,**kwargs)

@@ -11,10 +11,10 @@ django-debug-toolbar
 whitenoise
 
 # Django 3.0 async requirements
-gunicorn
-uvicorn
-uvloop
-httptools
+# gunicorn
+# uvicorn
+# uvloop
+# httptools
 
 # Databases
 psycopg2-binary

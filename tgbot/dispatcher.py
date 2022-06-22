@@ -3,6 +3,7 @@
 """
 import sys
 import logging
+from telnetlib import SE
 from typing import Dict
 
 import telegram.error
@@ -10,8 +11,10 @@ from telegram import Bot, Update, BotCommand
 from telegram.ext import (
     Updater, Dispatcher, Filters,
     CommandHandler, MessageHandler,
-    CallbackQueryHandler,
+    CallbackQueryHandler
 )
+
+
 
 from dtb.celery import app  # event processing in async mode
 from dtb.settings import TELEGRAM_TOKEN, DEBUG
@@ -24,6 +27,8 @@ from tgbot.handlers.broadcast_message import handlers as broadcast_handlers
 from tgbot.handlers.onboarding.manage_data import SECRET_LEVEL_BUTTON
 from tgbot.handlers.broadcast_message.manage_data import CONFIRM_DECLINE_BROADCAST
 from tgbot.handlers.broadcast_message.static_text import broadcast_command
+from tgbot.handlers.location.static_text import BOOKS, PROGS, VIDEOS, SEARCH, BOOK_ADD, BOOK_LIST,PROG_ADD, PROG_LIST, VIDEO_ADD, VIDEO_LIST
+
 
 
 def setup_dispatcher(dp):
@@ -32,6 +37,7 @@ def setup_dispatcher(dp):
     """
     # onboarding
     dp.add_handler(CommandHandler("start", onboarding_handlers.command_start))
+    dp.add_handler(MessageHandler(Filters.text("Bosh Menyu"), onboarding_handlers.command_start))
 
     # admin commands
     dp.add_handler(CommandHandler("admin", admin_handlers.admin))
@@ -42,6 +48,27 @@ def setup_dispatcher(dp):
     dp.add_handler(CommandHandler("ask_location", location_handlers.ask_for_location))
     dp.add_handler(MessageHandler(Filters.location, location_handlers.location_handler))
 
+    #categories
+    dp.add_handler(MessageHandler(Filters.text(BOOKS), onboarding_handlers.cat_books))
+    dp.add_handler(MessageHandler(Filters.text(PROGS), onboarding_handlers.cat_progs ))
+    dp.add_handler(MessageHandler(Filters.text(VIDEOS),  onboarding_handlers.cat_videos))
+    dp.add_handler(MessageHandler(Filters.text("Orqaga"),  onboarding_handlers.command_start))    
+    dp.add_handler(MessageHandler(Filters.text(BOOK_ADD),  onboarding_handlers.add_book))
+    dp.add_handler(MessageHandler(Filters.text(BOOK_LIST),  onboarding_handlers.book_list))
+    dp.add_handler(MessageHandler(Filters.text(PROG_ADD),  onboarding_handlers.add_prog))
+    dp.add_handler(MessageHandler(Filters.text(PROG_LIST),  onboarding_handlers.prog_list))
+    dp.add_handler(MessageHandler(Filters.text(VIDEO_ADD),  onboarding_handlers.add_video))
+    dp.add_handler(MessageHandler(Filters.document | Filters.video | Filters.photo,  onboarding_handlers.upload_file))  
+    dp.add_handler(MessageHandler(Filters.text(VIDEO_LIST),  onboarding_handlers.video_list))
+    dp.add_handler(MessageHandler(Filters.text,  onboarding_handlers.add_name))
+    
+    
+    
+    
+    # dp.add_handler(MessageHandler(filters.Regex(SEARCH),  onboarding_handlers.cat_search))
+    
+     
+    
     # secret level
     dp.add_handler(CallbackQueryHandler(onboarding_handlers.secret_level, pattern=f"^{SECRET_LEVEL_BUTTON}"))
 
@@ -57,10 +84,29 @@ def setup_dispatcher(dp):
     dp.add_handler(MessageHandler(
         Filters.animation, files.show_file_id,
     ))
+    #callback_querylar uchun
+    dp.add_handler(CallbackQueryHandler(onboarding_handlers.list_view, pattern="1"))
+    dp.add_handler(CallbackQueryHandler(onboarding_handlers.list_view, pattern="2"))
+    dp.add_handler(CallbackQueryHandler(onboarding_handlers.list_view, pattern="3"))
+    dp.add_handler(CallbackQueryHandler(onboarding_handlers.list_view, pattern="4"))
+    dp.add_handler(CallbackQueryHandler(onboarding_handlers.list_view, pattern="5"))
+    dp.add_handler(CallbackQueryHandler(onboarding_handlers.list_view, pattern="6"))
+    dp.add_handler(CallbackQueryHandler(onboarding_handlers.list_view, pattern="7"))
+    dp.add_handler(CallbackQueryHandler(onboarding_handlers.list_view, pattern="8"))
+    dp.add_handler(CallbackQueryHandler(onboarding_handlers.list_view, pattern="9"))
+    dp.add_handler(CallbackQueryHandler(onboarding_handlers.list_view, pattern="10"))
+    dp.add_handler(CallbackQueryHandler(onboarding_handlers.list_view, pattern="11"))
+    
+    
+    
+    dp.add_handler(CallbackQueryHandler(onboarding_handlers.detail))
 
     # handling errors
     dp.add_error_handler(error.send_stacktrace_to_tg_chat)
 
+    #endobnoarding
+    
+    
     # EXAMPLES FOR HANDLERS
     # dp.add_handler(MessageHandler(Filters.text, <function_handler>))
     # dp.add_handler(MessageHandler(
@@ -72,6 +118,7 @@ def setup_dispatcher(dp):
     #     # & Filters.forwarded & (Filters.photo | Filters.video | Filters.animation),
     #     <function_handler>,
     # ))
+ 
 
     return dp
 
