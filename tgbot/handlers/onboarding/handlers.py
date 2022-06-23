@@ -283,7 +283,8 @@ def list_view(update: Update, context: CallbackContext) -> None:
 def detail(update: Update, context: CallbackContext) -> None:
     user_id = update.effective_message.chat_id
     data = update.callback_query.data
-    file = Files.objects.get(slug=data)
+    data = data.split('-')[1]
+    file = Files.objects.get(id=data)
 
     if file.type == "book":
         context.bot.send_document(
