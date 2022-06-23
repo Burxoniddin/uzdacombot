@@ -1,6 +1,6 @@
 from telegram import ReplyKeyboardMarkup, KeyboardButton
 
-from tgbot.handlers.location.static_text import BOOK_LIST, PROG_ADD, PROG_LIST, SEND_LOCATION, BOOKS, VIDEO_ADD, VIDEO_LIST, VIDEOS, PROGS, SEARCH, BOOK_ADD ,BOOK_LIST, PROG_ADD, PROG_LIST, VIDEO_ADD, VIDEO_LIST
+from tgbot.handlers.location.static_text import BOOK_LIST, PROG_ADD, PROG_LIST, SEND_LOCATION, BOOKS, VIDEO_ADD, VIDEO_LIST, VIDEOS, PROGS, QUIZ, BOOK_ADD ,BOOK_LIST, PROG_ADD, PROG_LIST, VIDEO_ADD, VIDEO_LIST
 
 
 def send_location_keyboard() -> ReplyKeyboardMarkup:
@@ -17,7 +17,7 @@ def main_keyboards() -> ReplyKeyboardMarkup:
         [[KeyboardButton(text=BOOKS)],
          [KeyboardButton(text=VIDEOS)],
          [KeyboardButton(text=PROGS)],
-         [KeyboardButton(text=SEARCH)]
+         [KeyboardButton(text=QUIZ)]
          ],
         resize_keyboard=True
     )

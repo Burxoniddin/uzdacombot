@@ -11,7 +11,7 @@ from telegram import Bot, Update, BotCommand
 from telegram.ext import (
     Updater, Dispatcher, Filters,
     CommandHandler, MessageHandler,
-    CallbackQueryHandler
+    CallbackQueryHandler,PollHandler
 )
 
 
@@ -27,7 +27,7 @@ from tgbot.handlers.broadcast_message import handlers as broadcast_handlers
 from tgbot.handlers.onboarding.manage_data import SECRET_LEVEL_BUTTON
 from tgbot.handlers.broadcast_message.manage_data import CONFIRM_DECLINE_BROADCAST
 from tgbot.handlers.broadcast_message.static_text import broadcast_command
-from tgbot.handlers.location.static_text import BOOKS, PROGS, VIDEOS, SEARCH, BOOK_ADD, BOOK_LIST,PROG_ADD, PROG_LIST, VIDEO_ADD, VIDEO_LIST
+from tgbot.handlers.location.static_text import BOOKS, PROGS, VIDEOS, QUIZ, BOOK_ADD, BOOK_LIST,PROG_ADD, PROG_LIST, VIDEO_ADD, VIDEO_LIST
 
 
 
@@ -52,6 +52,7 @@ def setup_dispatcher(dp):
     dp.add_handler(MessageHandler(Filters.text(BOOKS), onboarding_handlers.cat_books))
     dp.add_handler(MessageHandler(Filters.text(PROGS), onboarding_handlers.cat_progs ))
     dp.add_handler(MessageHandler(Filters.text(VIDEOS),  onboarding_handlers.cat_videos))
+    dp.add_handler(MessageHandler(Filters.text(QUIZ),  onboarding_handlers.cat_quiz))
     dp.add_handler(MessageHandler(Filters.text("Orqaga"),  onboarding_handlers.command_start))    
     dp.add_handler(MessageHandler(Filters.text(BOOK_ADD),  onboarding_handlers.add_book))
     dp.add_handler(MessageHandler(Filters.text(BOOK_LIST),  onboarding_handlers.book_list))
@@ -65,7 +66,7 @@ def setup_dispatcher(dp):
     
     
     
-    # dp.add_handler(MessageHandler(filters.Regex(SEARCH),  onboarding_handlers.cat_search))
+    # dp.add_handler(MessageHandler(filters.Regex(QUIZ),  onboarding_handlers.cat_QUIZ))
     
      
     
@@ -99,11 +100,11 @@ def setup_dispatcher(dp):
     
     
     
-    dp.add_handler(CallbackQueryHandler(onboarding_handlers.detail))
+    dp.add_handler(CallbackQueryHandler(onboarding_handlers.detail, pattern=r"detail-"))
 
     # handling errors
     dp.add_error_handler(error.send_stacktrace_to_tg_chat)
-
+    dp.add_handler(PollHandler(onboarding_handlers.poll_handler, pass_chat_data=True, pass_user_data=True))
     #endobnoarding
     
     

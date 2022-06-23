@@ -2,7 +2,7 @@ SEND_LOCATION = "Send 🌏🌎🌍"
 BOOKS = "Kitoblar"
 VIDEOS = "Video darsliklar"
 PROGS = "Dasturlar"
-SEARCH = "Qidirish"
+QUIZ = "Test"
 
 BOOK_ADD = "Kitob qo'shish"
 BOOK_LIST = "Kitoblar ro'yxati"
@@ -12,7 +12,6 @@ PROG_LIST = "Dasturlar ro'yxati"
 
 VIDEO_ADD = "Video qo'shish"
 VIDEO_LIST = "Videolar ro'yxati"
-
 
 
 share_location = "Would you mind sharing your location?"

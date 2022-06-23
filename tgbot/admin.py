@@ -4,8 +4,8 @@ from django.shortcuts import render
 
 from dtb.settings import DEBUG
 
-from tgbot.models import Location
-from tgbot.models import User
+from tgbot.models import Location, Files, Test, TestOption, User
+
 from tgbot.forms import BroadcastForm
 
 from tgbot.tasks import broadcast_message
@@ -15,7 +15,7 @@ from tgbot.handlers.broadcast_message.utils import _send_message
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
     list_display = [
-        'user_id', 'username', 'first_name', 'last_name', 
+        'user_id', 'username', 'first_name', 'last_name',
         'language_code', 'deep_link',
         'created_at', 'updated_at', "is_blocked_bot",
     ]
@@ -26,7 +26,8 @@ class UserAdmin(admin.ModelAdmin):
 
     def broadcast(self, request, queryset):
         """ Select users via check mark in django-admin panel, then select "Broadcast" to send message"""
-        user_ids = queryset.values_list('user_id', flat=True).distinct().iterator()
+        user_ids = queryset.values_list(
+            'user_id', flat=True).distinct().iterator()
         if 'apply' in request.POST:
             broadcast_message_text = request.POST["broadcast_text"]
 
@@ -36,19 +37,38 @@ class UserAdmin(admin.ModelAdmin):
                         user_id=user_id,
                         text=broadcast_message_text,
                     )
-                self.message_user(request, f"Just broadcasted to {len(queryset)} users")
+                self.message_user(
+                    request, f"Just broadcasted to {len(queryset)} users")
             else:
-                broadcast_message.delay(text=broadcast_message_text, user_ids=list(user_ids))
-                self.message_user(request, f"Broadcasting of {len(queryset)} messages has been started")
+                broadcast_message.delay(
+                    text=broadcast_message_text, user_ids=list(user_ids))
+                self.message_user(
+                    request, f"Broadcasting of {len(queryset)} messages has been started")
 
             return HttpResponseRedirect(request.get_full_path())
         else:
             form = BroadcastForm(initial={'_selected_action': user_ids})
             return render(
-                request, "admin/broadcast_message.html", {'form': form, 'title': u'Broadcast message'}
+                request, "admin/broadcast_message.html", {
+                    'form': form, 'title': u'Broadcast message'}
             )
 
 
 @admin.register(Location)
 class LocationAdmin(admin.ModelAdmin):
     list_display = ['id', 'user_id', 'created_at']
+
+
+@admin.register(Files)
+class FilesAdmin(admin.ModelAdmin):
+    pass
+
+
+class TestOptionAdmin(admin.TabularInline):
+    model = TestOption
+    extra = 4
+
+
+@admin.register(Test)
+class TestAdmin(admin.ModelAdmin):
+    inlines = (TestOptionAdmin,)

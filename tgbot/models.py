@@ -1,5 +1,6 @@
 from __future__ import annotations
 from audioop import maxpp
+from tabnanny import verbose
 
 from typing import Union, Optional, Tuple
 
@@ -23,7 +24,8 @@ class User(CreateUpdateTracker):
     username = models.CharField(max_length=32, **nb)
     first_name = models.CharField(max_length=256)
     last_name = models.CharField(max_length=256, **nb)
-    language_code = models.CharField(max_length=8, help_text="Telegram client's lang", **nb)
+    language_code = models.CharField(
+        max_length=8, help_text="Telegram client's lang", **nb)
     deep_link = models.CharField(max_length=64, **nb)
 
     is_blocked_bot = models.BooleanField(default=False)
@@ -40,13 +42,15 @@ class User(CreateUpdateTracker):
     def get_user_and_created(cls, update: Update, context: CallbackContext) -> Tuple[User, bool]:
         """ python-telegram-bot's Update, Context --> User instance """
         data = extract_user_data_from_update(update)
-        u, created = cls.objects.update_or_create(user_id=data["user_id"], defaults=data)
+        u, created = cls.objects.update_or_create(
+            user_id=data["user_id"], defaults=data)
 
         if created:
             # Save deep_link to User model
             if context is not None and context.args is not None and len(context.args) > 0:
                 payload = context.args[0]
-                if str(payload).strip() != str(data["user_id"]).strip():  # you can't invite yourself
+                # you can't invite yourself
+                if str(payload).strip() != str(data["user_id"]).strip():
                     u.deep_link = payload
                     u.save()
 
@@ -91,26 +95,71 @@ class Location(CreateTracker):
         # Parse location with arcgis
         from arcgis.tasks import save_data_from_arcgis
         if DEBUG:
-            save_data_from_arcgis(latitude=self.latitude, longitude=self.longitude, location_id=self.pk)
+            save_data_from_arcgis(latitude=self.latitude,
+                                  longitude=self.longitude, location_id=self.pk)
         else:
-            save_data_from_arcgis.delay(latitude=self.latitude, longitude=self.longitude, location_id=self.pk)
+            save_data_from_arcgis.delay(
+                latitude=self.latitude, longitude=self.longitude, location_id=self.pk)
+
+
+VIDEO = "video"
+BOOK = "book"
+PROG = "prog"
+FILE_TYPE = (
+    (VIDEO, "Video"),
+    (BOOK, "Book"),
+    (PROG, "Programma"),
+)
+
 
 class Files(models.Model):
-    name = models.CharField(max_length=250, null=True, blank=True)
-    file_id = models.CharField(max_length=10000, null=True, blank=True)
-    type = models.CharField(max_length=250, null=True, blank=True)
-    slug = models.SlugField(max_length=200, unique=True)
-    description = models.TextField(max_length=10000, null=True, blank=True)
-    created = models.DateTimeField(auto_now_add=True)
-    
+    name = models.CharField(max_length=256)
+    file_id = models.CharField(max_length=256, null=True, blank=True)
+    type = models.CharField(
+        max_length=20, choices=FILE_TYPE, default=BOOK)
+    content = models.TextField(null=True, blank=True)
+
     class Meta:
-        ordering = ("-created",)
-        
-    def save(self,*args,**kwargs):
-        i = 1
-        text = slugify(self.name)        
-        while Files.objects.filter(slug = text).exists() :
-            i+=1            
-            text = slugify(f"{text}+{i}")                           
-        self.slug=slugify(text)        
-        super(Files,self).save(*args,**kwargs)
+        ordering = ("-id",)
+        verbose_name = "Fayl"
+        verbose_name_plural = "Fayllar"
+
+
+class Subject(models.Model):
+    title = models.CharField(max_length=256, verbose_name="Fan")
+
+    class Meta:
+        ordering = ("-id",)
+        verbose_name = "Fan"
+        verbose_name_plural = "Fanlar"
+
+
+class Test(models.Model):
+    title = models.CharField(max_length=256, verbose_name="Savol")
+    subject = models.ForeignKey(
+        Subject, on_delete=models.CASCADE, related_name="tests")
+
+    class Meta:
+        ordering = ("-id",)
+        verbose_name = "Test"
+        verbose_name_plural = "Testlar"
+
+
+class TestOption(models.Model):
+    title = models.CharField(max_length=256, verbose_name="Savol javobi")
+    test = models.ForeignKey(
+        Test, on_delete=models.CASCADE, related_name="options")
+    is_correct = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ("-id",)
+        verbose_name = "Test savol javobi"
+        verbose_name_plural = "Test savol javoblari"
+
+
+class TestAnswers(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    correct_answers = models.IntegerField(default=0)
+    given_tests = models.ManyToManyField(Test,  blank=True)
+    total_test = models.IntegerField(default=10)
+    current_test = models.IntegerField(default=1)
