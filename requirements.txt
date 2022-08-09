@@ -10,8 +10,9 @@ django-cors-headers
 django-debug-toolbar
 whitenoise
 
+
 # Django 3.0 async requirements
-# gunicorn
+gunicorn
 # uvicorn
 # uvloop
 # httptools
